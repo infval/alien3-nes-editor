@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>[NES] Alien 3 - Editor (v1.1)</title>
+    <style>
+    html {
+      font-family: sans-serif;
+    }
+
+    .wrapper {
+      display: grid;
+      grid-auto-columns: max-content;
+      grid-column-gap: 10px;
+      grid-row-gap: 1em;
+    }
+
+    .wrapper .level {
+      grid-column: 1 / 2;
+      font-family: monospace, monospace;
+    }
+    .wrapper .easy {
+      grid-column: 2 / 3;
+    }
+    .wrapper .normal {
+      grid-column: 3 / 4;
+    }
+    .wrapper .hard {
+      grid-column: 4 / 5;
+    }
+
+    input[type="number"] {
+      width: 4em;
+    }
+
+    .rom {
+      background-color: #B1C7EA;
+      padding: 5px 10px;
+      border-radius: 5px;
+      border: 1px ridge black;
+      font-size: 0.8rem;
+      height: auto;
+    }
+
+    .rom:hover {
+      background-color: #2D5BA3;
+      color: white;
+    }
+
+    .rom:active {
+      background-color: #0D3F8F;
+      color: white;
+    }
+
+    .rom:disabled {
+      background-color: #cacaca;
+      color: rgb(0, 0, 0);
+    }
+
+    .en {
+      display: none;
+    }
+
+    #dropzone {
+      position: fixed;
+      left: 0px;
+      top: 0px;
+      z-index: 666;
+      width: 100%;
+      height: 100%;
+      background-color: rgb(0, 128, 192);
+      opacity: 0.5;
+      display: none;
+    }
+    </style>
+  </head>
+  <body>
+    <div style="margin: 8px;">
+      <label for="file" class="rom">Open <i>A</i>LIEN³ (U) ROM</label>
+      <input type="file" id="file" onchange="onChange(event)" accept=".nes" style="width: 0px; opacity: 0;"><!-- delete space
+   --><button id="saverom" class="rom">Save ROM</button>
+      <span id="romname"></span>
+      <button id="lang" class="rom" style="float: right;">RUS / ENG</button>
+    </div>
+
+    <fieldset>
+      <legend><span class="ru">Исправления</span><span class="en">Fixes</span></legend>
+      <div>
+        <input type="checkbox" id="fix1" checked>
+        <label for="fix1">
+          <span class="ru">Дополнительная платформа, позволяющая взобраться и подобрать предметы в конце уровня 1-1 (1)</span>
+          <span class="en">Additional platform for climbing and picking up items at the end of level 1-1 (1)</span>
+        </label>
+      </div>
+      <div>
+        <input type="checkbox" id="fix2" checked>
+        <label for="fix2">
+          <span class="ru">Местоположение оружия в конце уровня 2-2 (4) (как в европейской версии)</span>
+          <span class="en">Weapon location at the end of level 2-2 (4) (as in the European version)</span>
+        </label>
+      </div>
+      <div>
+        <input type="checkbox" id="fix3" checked>
+        <label for="fix3">
+          <span class="ru">Финальная дверь в конце уровня 2-2 (4)</span>
+          <span class="en">The final door at the end of level 2-2 (4)</span>
+        </label>
+      </div>
+      <div>
+        <input type="checkbox" id="fix4" checked>
+        <label for="fix4">
+          <span class="ru">Баг, позволяющий пройти через закрытую дверь (застрять в двери все еще можно) [<a href="https://www.youtube.com/watch?v=R47F-bZNZWY&t=85s">демонстрация бага</a>]</span>
+          <span class="en">Bug that allows you to go through a closed door (you can still get stuck in a door) [<a href="https://www.youtube.com/watch?v=R47F-bZNZWY&t=85s">bug demonstration</a>]</span>
+        </label>
+      </div>
+      <div>
+        <input type="checkbox" id="fix5" checked>
+        <label for="fix5">
+          <span class="ru">Обменять кнопки A и B (от</span>
+          <span class="en">Swap the B and A buttons (by</span> "the jabu" - <a href="http://www.romhacking.net/hacks/2669/">hack "Plus"</a>)
+        </label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend><span class="ru">Другие исправления</span><span class="en">Other fixes</span></legend>
+      <div>
+        <input type="checkbox" id="fix6">
+        <label for="fix6">
+          <span class="ru">Увеличение зоны видимости в направлении персонажа (от</span>
+          <span class="en">Fixed the scroll problems when you walk (by</span> "the jabu" - <a href="http://www.romhacking.net/hacks/2669/">hack "Plus"</a>)
+        </label>
+      </div>
+      <div>
+        <input type="checkbox" id="fix7">
+        <label for="fix7">
+          <span class="ru">Уменьшение задержки движения камеры (от</span>
+          <span class="en">Reducing the camera movement delay (by</span> "Guyver (X.B.M.)" - <a href="http://www.romhacking.net/hacks/2933/">hack "Vision Hack"</a>)
+        </label>
+      </div>
+      <div>
+        <input type="checkbox" id="fix8">
+        <label for="fix8">
+          <span class="ru">Реальное время (60 кадров = 1 секунда)</span>
+          <span class="en">Real time (60 frames = 1 second)</span>
+        </label>
+      </div>
+      <div>
+        <input type="checkbox" id="fix9">
+        <label for="fix9">
+          <span class="ru">Запрет на разрушение закрытой двери ракетницей</span>
+          <span class="en">Prohibiting the destruction of a closed door with a rocket launcher</span>
+        </label>
+      </div>
+      <div>
+        <input type="checkbox" id="fix10">
+        <label for="fix10">
+          <span class="ru">Добавить отсутствующую дверь на уровне 2-1 (3)</span>
+          <span class="en">Add missing door on level 2-1 (3)</span>
+        </label>
+      </div>
+      <div>
+        <input type="checkbox" id="fix11">
+        <label for="fix11">
+          <span class="ru">Заголовок NES 2.0 с submapper 3</span>
+          <span class="en">Header NES 2.0</span>
+        </label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend><span class="ru">Улучшение</span><span class="en">Improvement</span></legend>
+      <div>
+        <input type="checkbox" id="imp1">
+        <label for="imp1">
+          <span class="ru">Пропуск начальных экранов любой кнопкой</span>
+          <span class="en">Skip intro screens with any button</span>
+        </label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend><span class="ru">Читы</span><span class="en">Cheats</span></legend>
+      <div>
+        <input type="checkbox" id="infinite_energy">
+        <label for="infinite_energy">
+          <span class="ru">Бесконечная энергия</span>
+          <span class="en">Infinite Energy (by Whipon)</span>
+        </label>
+      </div>
+      <div>
+        <input type="checkbox" id="disable_timer">
+        <label for="disable_timer">
+          <span class="ru">Отключить таймер</span>
+          <span class="en">Disable Timer</span>
+        </label>
+      </div>
+    </fieldset>
+
+    <div style="text-align: center;">
+      <h2>Timer</h2>
+    </div>
+
+    <div class="wrapper" style="margin: 8px;">
+      <span class="level">Level</span>
+      <div class="easy">Easy</div>
+      <div class="normal">Normal</div>
+      <div class="hard">Hard</div>
+      <span class="level">1 (00)</span>
+      <div class="easy">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <div class="normal">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <div class="hard">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <span class="level">2 (01)</span>
+      <div class="easy">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <div class="normal">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <div class="hard">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <span class="level">G (02)</span>
+      <div class="easy">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <div class="normal">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <div class="hard">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <span class="level">3 (03)</span>
+      <div class="easy">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <div class="normal">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <div class="hard">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <span class="level">4 (04)</span>
+      <div class="easy">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <div class="normal">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <div class="hard">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <span class="level">G (05)</span>
+      <div class="easy">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <div class="normal">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <div class="hard">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <span class="level">5 (06)</span>
+      <div class="easy">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <div class="normal">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <div class="hard">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <span class="level">6 (07)</span>
+      <div class="easy">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <div class="normal">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <div class="hard">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <span class="level">G (08)</span>
+      <div class="easy">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <div class="normal">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <div class="hard">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <span class="level">7 (09)</span>
+      <div class="easy">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <div class="normal">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <div class="hard">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <span class="level">8 (0A)</span>
+      <div class="easy">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <div class="normal">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <div class="hard">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <span class="level">G (0B)</span>
+      <div class="easy">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <div class="normal">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+      <div class="hard">
+        <input type="number" class="minute" min="0" max="99">
+        <input type="number" class="second" min="0" max="59">
+      </div>
+    </div>
+
+    <div id="dropzone"></div>
+
+    <script>
+'use strict';
+
+let rom = {
+  arr: new Uint8Array(),
+  name: "",
+  isLoaded: false,
+};
+
+const patches = [
+// Fixes
+["28A3:DA", "27A3:7C", "27A4:7C", "27A5:7C", "27A6:7C", "27E3:7E", "27E4:7E", "27E5:7E", "27E6:7E"],
+["052F5:0000"],
+["7C8C:D7", "7CCC:1E", "5323:44", "1FE3C:9A"],
+["1D741:4C", "1D748:C93DB03CA5EEC902D036A93C38E5904C63D7EAEAEAEAEAEAEAEAEAEAEAEAEAEA"],
+["1ABEE:02", "1BC4B:02", "1BDC1:02", "1CFDA:01", "1D0B5:01", "1D3BF:02", "1D493:02", "1D593:01", "1D713:02", "1D79E:02", "1D9EB:02", "1DB51:02"],
+// Other fixes
+["1FB3A:76", "1FB3E:78", "1FB46:90", "1FB4A:88"],
+["1FB72:02", "1FB81:02"],
+["1B478:3C", "1E9FB:3C"],
+["1DDFC:B9"],
+["4265:84", "4275:05", "4285:0C", "4295:02", "42C5:1A"],
+["00:4E45531A081040083000000000000001"],
+// Improvement
+["14A8F:4CCB8A", "14AB5:4CCB8A", "14AEF:F004A528F0F74CBB8AEA"],
+// Cheats
+["1FAC3:AD"],
+["1B484:AD", "1B47F:09"],
+];
+
+const minutes = document.querySelectorAll(".minute");
+const seconds = document.querySelectorAll(".second");
+
+const offsets = [
+// PRG ROM, Easy 0M 0M 0S 0S, Normal ..., Hard ...
+0x1F80, // 00 (1)
+0x1FC0, // 01 (2)
+0x1BC0, // 02 (G)
+0x5F80, // 03 (3)
+0x5FC0, // 04 (4)
+0x5BC0, // 05 (G)
+0x9F80, // 06 (5)
+0x9FC0, // 07 (6)
+0x9BC0, // 08 (G)
+0xDF80, // 09 (7)
+0xDFC0, // 0A (8)
+0xDBC0, // 0B (G)
+];
+function loadValues(arr) {
+  for (let lvl = 0; lvl < 0xC; lvl++) {
+    let off = offsets[lvl] + 0x10;
+    minutes[lvl*3+0].value = arr[off+ 0] * 10 + arr[off+ 1];
+    seconds[lvl*3+0].value = arr[off+ 2] * 10 + arr[off+ 3];
+    minutes[lvl*3+1].value = arr[off+ 4] * 10 + arr[off+ 5];
+    seconds[lvl*3+1].value = arr[off+ 6] * 10 + arr[off+ 7];
+    minutes[lvl*3+2].value = arr[off+ 8] * 10 + arr[off+ 9];
+    seconds[lvl*3+2].value = arr[off+10] * 10 + arr[off+11];
+  }
+}
+function saveValues(arr) {
+  for (let lvl = 0; lvl < 0xC; lvl++) {
+    let off = offsets[lvl] + 0x10;
+    for (let gamemode = 0; gamemode < 3; gamemode++) {
+      let v = parseInt(minutes[lvl*3+gamemode].value, 10);
+      arr[off+0] = Math.floor(v / 10);
+      arr[off+1] = v % 10;
+      v = parseInt(seconds[lvl*3+gamemode].value, 10);
+      arr[off+2] = Math.floor(v / 10);
+      arr[off+3] = v % 10;
+      off += 4;
+    }
+  }
+  // Patches
+  const chks = document.querySelectorAll('input[type="checkbox"]');
+  for (let i = 0; i < chks.length; i++) {
+    if (chks[i].checked) {
+      let patch = patches[i];
+      for (let p = 0; p < patch.length; p++) {
+        let code = patch[p].split(":");
+        let offset = parseInt(code[0], 16);
+        let values = hexToBytes(code[1]);
+        for (let v = 0; v < values.length; v++) {
+          arr[offset+v] = values[v];
+        }
+      }
+    }
+  }
+}
+// https://stackoverflow.com/a/34356351
+function hexToBytes(hex) {
+  for (var bytes = [], c = 0; c < hex.length; c += 2)
+    bytes.push(parseInt(hex.substr(c, 2), 16));
+  return bytes;
+}
+
+const saveRomElement = document.getElementById("saverom");
+saveRomElement.disabled = true;
+saveRomElement.addEventListener("click", function () {
+  if (rom.isLoaded) {
+    let patched = rom.arr.slice();
+    saveValues(patched);
+    let suffixIndex = rom.name.lastIndexOf(".");
+    let suffix = rom.name.slice(suffixIndex);
+    let name = rom.name.slice(0, suffixIndex) + "_edit" + suffix;
+    saveFile(name, patched);
+  }
+});
+const romNameElement = document.getElementById("romname");
+const langElement = document.getElementById("lang");
+const ruElements = document.querySelectorAll(".ru");
+const enElements = document.querySelectorAll(".en");
+langElement.addEventListener("click", function () {
+  let show = ruElements;
+  let hide = enElements;
+  if (ruElements[0].style.display !== "none") {
+    show = enElements;
+    hide = ruElements;
+  }
+  show.forEach(x => x.style.display = "inline");
+  hide.forEach(x => x.style.display = "none");
+});
+
+function onChange(event) {
+  handleFiles(event.target.files);
+}
+function handleFiles(files) {
+  let file = files[0];
+  let reader = new FileReader();
+  reader.onload = function(event) {
+    rom.arr = new Uint8Array(event.target.result);
+    rom.name = file.name;
+    rom.isLoaded = true;
+    saveRomElement.disabled = false;
+    romNameElement.textContent = rom.name;
+    loadValues(rom.arr);
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+const dropzone = document.getElementById("dropzone");
+window.addEventListener("dragover", dragover, false);
+dropzone.addEventListener("dragleave", dragleave, false);
+dropzone.addEventListener("drop", drop, false);
+function dragover(e) {
+  e.stopPropagation();
+  e.preventDefault();
+  if (e.target.id !== "dropzone") {
+    dropzone.style.display = "block";
+  }
+}
+function dragleave(e) {
+  e.stopPropagation();
+  e.preventDefault();
+  if (e.target.id === "dropzone") {
+    dropzone.style.display = "none";
+  }
+}
+function drop(e) {
+  e.stopPropagation();
+  e.preventDefault();
+  dropzone.style.display = "none";
+  handleFiles(e.dataTransfer.files);
+}
+
+function saveFile(fileName, arr) {
+  saveAs(new Blob([arr], {type: 'application/octet-stream'}), fileName);
+}
+// https://stackoverflow.com/q/23451726
+function saveAs(blob, fileName) {
+  let url = window.URL.createObjectURL(blob);
+  let anchorElem = document.createElement("a");
+  anchorElem.style = "display: none";
+  anchorElem.href = url;
+  anchorElem.download = fileName;
+  document.body.appendChild(anchorElem);
+  anchorElem.click();
+  document.body.removeChild(anchorElem);
+  // On Edge, revokeObjectURL should be called only after
+  // a.click() has completed, atleast on EdgeHTML 15.15048
+  setTimeout(function() {
+    window.URL.revokeObjectURL(url);
+  }, 1000);
+}
+    </script>
+  </body>
+</html>
